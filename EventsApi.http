@@ -1,0 +1,46 @@
+@EventsApi_HostAddress = http://localhost:5004
+
+GET {{EventsApi_HostAddress}}/events
+Accept: application/json
+
+###
+POST {{EventsApi_HostAddress}}/events
+Content-Type: application/json
+
+{
+  "title": "Конференция",
+  "description": "Тест",
+  "startAt": "2025-06-01T10:00:00",
+  "endAt": "2025-06-01T18:00:00"
+}
+
+###
+GET {{EventsApi_HostAddress}}/events/1
+Accept: application/json
+
+###
+PUT {{EventsApi_HostAddress}}/events/1
+Content-Type: application/json
+
+{
+  "title": "Обновлённая",
+  "startAt": "2025-06-01T10:00:00",
+  "endAt": "2025-06-01T19:00:00"
+}
+
+###
+POST {{EventsApi_HostAddress}}/events
+Content-Type: application/json
+
+{
+  "title": "",
+  "startAt": "2025-06-01T10:00:00",
+  "endAt": "2025-06-01T18:00:00"
+}
+
+###
+DELETE {{EventsApi_HostAddress}}/events/1
+
+###
+GET {{EventsApi_HostAddress}}/events/999
+Accept: application/json
