@@ -14,7 +14,7 @@ REST API для управления мероприятиями на ASP.NET Cor
 - Выполнить команду cd <папка> для перехода в папку проекта
 - Выполнить команду dotnet restore
 - Выполнить команду dotnet build
-- Выполнить команду dotnet run
+- Выполнить команду dotnet run --project src/EventsApi
 - Откройте в браузере: http://localhost:5004/swagger/index.html
 
 ## API
