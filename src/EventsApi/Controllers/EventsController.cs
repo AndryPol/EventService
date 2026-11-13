@@ -43,16 +43,9 @@ public class EventsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public ActionResult<EventDto> CreateEvent([FromBody] EventDto dto)
     {
-        try
-        {
-            var created = _eventService.AddEvent(new Event(dto));
-            var response = new EventDto(created);
-            return CreatedAtAction(nameof(GetEventById), new { id = response.Id }, response);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        var created = _eventService.AddEvent(new Event(dto));
+        var response = new EventDto(created);
+        return CreatedAtAction(nameof(GetEventById), new { id = response.Id }, response);
     }
 
     [HttpPut("{id:int}")]
@@ -61,18 +54,11 @@ public class EventsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<EventDto> UpdateEvent(int id, [FromBody] EventDto dto)
     {
-        try
-        {
-            var updated = _eventService.UpdateEvent(id, new Event(dto));
+        var updated = _eventService.UpdateEvent(id, new Event(dto));
 
-            return updated is null
-                ? NotFound()
-                : Ok(new EventDto(updated));
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        return updated is null
+            ? NotFound()
+            : Ok(new EventDto(updated));
     }
 
     [HttpDelete("{id:int}")]
