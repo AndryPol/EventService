@@ -18,18 +18,29 @@ public class EventsController : ControllerBase
     }
 
     [HttpGet]
-    [ProducesResponseType(typeof(IReadOnlyList<EventDto>), StatusCodes.Status200OK)]
-    public ActionResult<IReadOnlyList<EventDto>> GetEvents(
-        [FromQuery] string? title,
-        [FromQuery] DateTime? from,
-        [FromQuery] DateTime? to)
+    [ProducesResponseType(typeof(PaginatedResult<EventDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public ActionResult<PaginatedResult<EventDto>> GetEvents(
+    [FromQuery] string? title,
+    [FromQuery] DateTime? from,
+    [FromQuery] DateTime? to,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10)
     {
-        var events = _eventService.GetEvents(title, from, to)
-            .Select(e => new EventDto(e))
-            .ToList();
 
-        return Ok(events);
+        var result = _eventService.GetEvents(title, from, to, page, pageSize);
+
+        var response = new PaginatedResult<EventDto>
+        {
+            TotalCount = result.TotalCount,
+            Items = result.Items.Select(e => new EventDto(e)).ToList(),
+            Page = result.Page,
+            PageSize = result.PageSize
+        };
+
+        return Ok(response);
     }
+
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(EventDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

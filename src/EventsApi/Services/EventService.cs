@@ -1,4 +1,5 @@
-﻿using EventsApi.Models;
+﻿using EventsApi.Dto;
+using EventsApi.Models;
 
 namespace EventsApi.Services;
 
@@ -18,27 +19,38 @@ public class EventService : IEventService
         }
     }
 
-    public IReadOnlyCollection<Event> GetEvents(string? title, DateTime? from, DateTime? to)
+    public PaginatedResult<Event> GetEvents(
+    string? title, DateTime? from, DateTime? to, int page, int pageSize)
     {
+        if (page < 1 || pageSize < 1)
+            throw new ArgumentException("page and pageSize must be >= 1.");
         lock (_lock)
         {
             IEnumerable<Event> query = _events.Values;
 
             if (!string.IsNullOrWhiteSpace(title))
                 query = query.Where(e => e.Title.Contains(title, StringComparison.OrdinalIgnoreCase));
-
             if (from.HasValue)
                 query = query.Where(e => e.StartAt >= from.Value);
-
             if (to.HasValue)
                 query = query.Where(e => e.EndAt <= to.Value);
 
-            return query
-                .OrderBy(e => e.StartAt)
-                .ThenBy(e => e.Id)
+            var ordered = query.OrderBy(e => e.StartAt).ThenBy(e => e.Id);
+
+            var totalCount = ordered.Count();
+            var items = ordered
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Select(e => e.Clone())
-                .ToList()
-                .AsReadOnly();
+                .ToList();
+
+            return new PaginatedResult<Event>
+            {
+                TotalCount = totalCount,
+                Items = items,
+                Page = page,
+                PageSize = pageSize
+            };
         }
     }
 
