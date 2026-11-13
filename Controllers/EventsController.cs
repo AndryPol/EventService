@@ -1,5 +1,5 @@
-﻿using EventsApi.EventService.Dto;
-using EventsApi.EventService.Models;
+﻿using EventsApi.Dto;
+using EventsApi.Models;
 using EventsApi.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -43,13 +43,16 @@ public class EventsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public ActionResult<EventDto> CreateEvent([FromBody] EventDto dto)
     {
-        var created = _eventService.AddEvent(new Event(dto));
-
-        if (created is null)
-            return BadRequest();
-
-        var response = new EventDto(created);
-        return CreatedAtAction(nameof(GetEventById), new { id = response.Id }, response);
+        try
+        {
+            var created = _eventService.AddEvent(new Event(dto));
+            var response = new EventDto(created);
+            return CreatedAtAction(nameof(GetEventById), new { id = response.Id }, response);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpPut("{id:int}")]
@@ -58,11 +61,18 @@ public class EventsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<EventDto> UpdateEvent(int id, [FromBody] EventDto dto)
     {
-        var updated = _eventService.UpdateEvent(id, new Event(dto));
+        try
+        {
+            var updated = _eventService.UpdateEvent(id, new Event(dto));
 
-        return updated is null
-            ? NotFound()
-            : Ok(new EventDto(updated));
+            return updated is null
+                ? NotFound()
+                : Ok(new EventDto(updated));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpDelete("{id:int}")]

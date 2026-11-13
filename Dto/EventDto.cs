@@ -1,8 +1,8 @@
-﻿using EventsApi.EventService.Models;
+﻿using EventsApi.Models;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace EventsApi.EventService.Dto;
+namespace EventsApi.Dto;
 
 public class EventDto : IValidatableObject
 {
@@ -39,14 +39,12 @@ public class EventDto : IValidatableObject
                 [nameof(Title)]);
         }
 
-
         if (!StartAt.HasValue)
         {
             yield return new ValidationResult(
                 "StartAt is required.",
                 [nameof(StartAt)]);
         }
-
 
         if (!EndAt.HasValue)
         {

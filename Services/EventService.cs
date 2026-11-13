@@ -1,4 +1,4 @@
-﻿using EventsApi.EventService.Models;
+﻿using EventsApi.Models;
 
 namespace EventsApi.Services;
 
@@ -8,15 +8,13 @@ public class EventService : IEventService
     private readonly Dictionary<int, Event> _events = [];
     private readonly Lock _lock = new();
     private int _eventId;
-    public Event? AddEvent(Event newEvent)
-    { 
+    public Event AddEvent(Event newEvent)
+    {
         lock (_lock)
         {
-            if (newEvent.Id != default)
-                return null;
             newEvent.Id = Interlocked.Increment(ref _eventId);
             _events.Add(newEvent.Id, newEvent);
-            return newEvent;
+            return newEvent.Clone();
         }
     }
 
@@ -27,6 +25,7 @@ public class EventService : IEventService
             return _events.Values
                 .OrderBy(e => e.StartAt)
                 .ThenBy(e => e.Id)
+                .Select(e => e.Clone())
                 .ToList()
                 .AsReadOnly();
         }
@@ -37,7 +36,7 @@ public class EventService : IEventService
         lock (_lock)
         {
             if (_events.TryGetValue(id, out var result))
-                return result;
+                return result.Clone();
             return null;
         }
     }
@@ -57,7 +56,7 @@ public class EventService : IEventService
             if (!_events.TryGetValue(id, out var existing))
                 return null;
             existing.Update(updated);
-            return existing;
+            return existing.Clone();
         }
     }
 }
