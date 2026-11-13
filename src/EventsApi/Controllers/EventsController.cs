@@ -18,15 +18,29 @@ public class EventsController : ControllerBase
     }
 
     [HttpGet]
-    [ProducesResponseType(typeof(IReadOnlyList<EventDto>), StatusCodes.Status200OK)]
-    public ActionResult<IReadOnlyList<EventDto>> GetAllEvents()
+    [ProducesResponseType(typeof(PaginatedResult<EventDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public ActionResult<PaginatedResult<EventDto>> GetEvents(
+    [FromQuery] string? title,
+    [FromQuery] DateTime? from,
+    [FromQuery] DateTime? to,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10)
     {
-        var events = _eventService.GetAll()
-            .Select(e => new EventDto(e))
-            .ToList();
 
-        return Ok(events);
+        var result = _eventService.GetEvents(title, from, to, page, pageSize);
+
+        var response = new PaginatedResult<EventDto>
+        {
+            TotalCount = result.TotalCount,
+            Items = result.Items.Select(e => new EventDto(e)).ToList(),
+            Page = result.Page,
+            PageSize = result.PageSize
+        };
+
+        return Ok(response);
     }
+
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(EventDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -43,16 +57,9 @@ public class EventsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public ActionResult<EventDto> CreateEvent([FromBody] EventDto dto)
     {
-        try
-        {
-            var created = _eventService.AddEvent(new Event(dto));
-            var response = new EventDto(created);
-            return CreatedAtAction(nameof(GetEventById), new { id = response.Id }, response);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        var created = _eventService.AddEvent(new Event(dto));
+        var response = new EventDto(created);
+        return CreatedAtAction(nameof(GetEventById), new { id = response.Id }, response);
     }
 
     [HttpPut("{id:int}")]
@@ -61,18 +68,11 @@ public class EventsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public ActionResult<EventDto> UpdateEvent(int id, [FromBody] EventDto dto)
     {
-        try
-        {
-            var updated = _eventService.UpdateEvent(id, new Event(dto));
+        var updated = _eventService.UpdateEvent(id, new Event(dto));
 
-            return updated is null
-                ? NotFound()
-                : Ok(new EventDto(updated));
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        return updated is null
+            ? NotFound()
+            : Ok(new EventDto(updated));
     }
 
     [HttpDelete("{id:int}")]
