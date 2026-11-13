@@ -18,11 +18,22 @@ public class EventService : IEventService
         }
     }
 
-    public IReadOnlyCollection<Event> GetAll()
+    public IReadOnlyCollection<Event> GetEvents(string? title, DateTime? from, DateTime? to)
     {
         lock (_lock)
         {
-            return _events.Values
+            IEnumerable<Event> query = _events.Values;
+
+            if (!string.IsNullOrWhiteSpace(title))
+                query = query.Where(e => e.Title.Contains(title, StringComparison.OrdinalIgnoreCase));
+
+            if (from.HasValue)
+                query = query.Where(e => e.StartAt >= from.Value);
+
+            if (to.HasValue)
+                query = query.Where(e => e.EndAt <= to.Value);
+
+            return query
                 .OrderBy(e => e.StartAt)
                 .ThenBy(e => e.Id)
                 .Select(e => e.Clone())

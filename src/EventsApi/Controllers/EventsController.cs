@@ -19,9 +19,12 @@ public class EventsController : ControllerBase
 
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<EventDto>), StatusCodes.Status200OK)]
-    public ActionResult<IReadOnlyList<EventDto>> GetAllEvents()
+    public ActionResult<IReadOnlyList<EventDto>> GetEvents(
+        [FromQuery] string? title,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to)
     {
-        var events = _eventService.GetAll()
+        var events = _eventService.GetEvents(title, from, to)
             .Select(e => new EventDto(e))
             .ToList();
 
