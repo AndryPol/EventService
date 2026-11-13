@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/tests/">
+    <Project Path="tests/EventServiceTests/EventServiceTests.csproj" />
+  </Folder>
   <Folder Name="/Элементы решения/">
     <File Path="README.md" />
   </Folder>
